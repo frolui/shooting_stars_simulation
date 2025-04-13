@@ -14,6 +14,27 @@ window.CanvasNest = function({
   let width, height;
 
   const mouse = { x: null, y: null, max: 20000 };
+  let attachedNow = 0;
+  let attachedMax = 0;
+
+  const modeSelect = document.getElementById("mode");
+  let mode = (modeSelect && modeSelect.value) || "gravity";
+
+  if (modeSelect) {
+    modeSelect.addEventListener("change", (e) => {
+      mode = e.target.value;
+    });
+  }
+
+  window._resetAttachedMax = () => {
+    attachedMax = 0;
+  };
+  window._resetModeToDefault = () => {
+    if (modeSelect) {
+      modeSelect.value = "gravity";
+      mode = "gravity";
+    }
+  };
 
   function resizeCanvas() {
     width = canvas.width = window.innerWidth;
@@ -22,12 +43,14 @@ window.CanvasNest = function({
 
   function draw() {
     context.clearRect(0, 0, width, height);
-    const all = [mouse].concat(points);
+    const all = [mouse, ...points];
+
     points.forEach(p => {
       p.x += p.xa;
       p.y += p.ya;
-      p.xa *= (p.x > width || p.x < 0) ? -1 : 1;
-      p.ya *= (p.y > height || p.y < 0) ? -1 : 1;
+
+      if (p.x > width || p.x < 0) p.xa *= -1;
+      if (p.y > height || p.y < 0) p.ya *= -1;
 
       context.fillStyle = `rgba(${color},1)`;
       context.fillRect(p.x - pointSize / 2, p.y - pointSize / 2, pointSize, pointSize);
@@ -38,23 +61,54 @@ window.CanvasNest = function({
           const dx = p.x - q.x;
           const dy = p.y - q.y;
           const dist2 = dx * dx + dy * dy;
+
           if (dist2 < q.max) {
-            if (q === mouse && dist2 > q.max / 2) {
-              p.x -= 0.03 * dx;
-              p.y -= 0.03 * dy;
+            if (q === mouse) {
+              if (mode === "gravity" && dist2 > q.max / 2) {
+                const force = 0.03 * (1 - dist2 / q.max);
+                p.x -= force * dx;
+                p.y -= force * dy;
+              } else if (mode === "repulsion") {
+                const distance = Math.sqrt(dist2);
+                if (distance > 0.5) {
+                  const nx = dx / distance;
+                  const ny = dy / distance;
+                  const force = 3 * (1 - distance / Math.sqrt(q.max));
+                  p.x += force * nx;
+                  p.y += force * ny;
+                } else {
+                  p.x += (Math.random() - 0.5) * 2;
+                  p.y += (Math.random() - 0.5) * 2;
+                }
+              }
+
+              if (mode !== "ignore") {
+                attachedNow++;
+              }
             }
-            const ratio = (q.max - dist2) / q.max;
-            context.beginPath();
-            context.lineWidth = ratio / 2 * lineScale;
-            context.strokeStyle = `rgba(${color},${ratio + 0.2})`;
-            context.moveTo(p.x, p.y);
-            context.lineTo(q.x, q.y);
-            context.stroke();
+
+            if (!(q === mouse && (mode === "repulsion" || mode === "ignore"))) {
+              const ratio = (q.max - dist2) / q.max;
+              context.beginPath();
+              context.lineWidth = ratio / 2 * lineScale;
+              context.strokeStyle = `rgba(${color},${ratio + 0.2})`;
+              context.moveTo(p.x, p.y);
+              context.lineTo(q.x, q.y);
+              context.stroke();
+            }
           }
         }
       }
+
       all.splice(all.indexOf(p), 1);
     });
+
+    attachedMax = Math.max(attachedMax, attachedNow);
+    const nowEl = document.getElementById("attached-now");
+    const maxEl = document.getElementById("attached-max");
+    if (nowEl) nowEl.textContent = attachedNow;
+    if (maxEl) maxEl.textContent = attachedMax;
+    attachedNow = 0;
 
     requestAnimationFrame(draw);
   }

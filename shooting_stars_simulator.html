@@ -12,7 +12,7 @@
 
   <div style="display:flex; align-items:center; justify-content:space-between;">
     <label for="pointCount" style="margin-right:10px;">Points:</label>
-    <input type="number" id="pointCount" min="10" max="1000" value="250" style="width:100px;">
+    <input type="number" id="pointCount" min="10" max="1000" value="200" step="1" style="width:100px;">
   </div>
 
   <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -22,7 +22,7 @@
 
   <div style="display:flex; align-items:center; justify-content:space-between;">
     <label for="pointSize" style="margin-right:10px;">Point size:</label>
-    <input type="number" id="pointSize" min="1" max="5" step="1" value="1" style="width:100px;">
+    <input type="number" id="pointSize" min="1" max="5" step="0.1" value="1.5" style="width:100px;">
   </div>
 
   <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -40,38 +40,53 @@
     <input type="color" id="bgColor" value="#ffffff" style="width:100px;">
   </div>
 
-  <button onclick="updatePointCount()" style="padding:6px 10px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-weight:normal; cursor:pointer;">Apply</button>
-</div>
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="mode" style="margin-right:10px;">Mode:</label>
+    <select id="mode" style="width:100px;">
+      <option value="gravity">Gravity</option>
+      <option value="repulsion">Repulsion</option>
+      <option value="ignore">Ignore</option>
+    </select>
+  </div>
 
+  <button onclick="updatePointCount()" style="padding:6px 10px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-weight:normal; cursor:pointer;">Apply</button>
+  <button onclick="resetAllSettings()" style="padding:4px 8px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-size:13px; cursor:pointer;">Reset all settings</button>
+
+  <div id="attach-stats" style="display:flex; flex-direction:column; gap:4px; font-size:14px; margin-top:4px;">
+    <div>Attached: <span id="attached-now">0</span></div>
+    <div>Max attached: <span id="attached-max">0</span></div>
+    <button onclick="resetAttachCounter()" style="padding:4px 8px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-size:13px; cursor:pointer;">Reset counter</button>
+  </div>
+
+</div>
 
 <script src="files/canvas-nest.custom.js"></script>
 <script>
   let destroyCanvas = null;
 
   function updatePointCount() {
-  const count = parseInt(document.getElementById('pointCount').value);
-  const speed = parseFloat(document.getElementById('speed').value);
-  const pointSize = parseInt(document.getElementById('pointSize').value);
-  const lineScale = parseFloat(document.getElementById('lineScale').value);
-  const colorHex = document.getElementById('color').value;
-  const bgHex = document.getElementById('bgColor').value;
+    const count = parseInt(document.getElementById('pointCount').value);
+    const speed = parseFloat(document.getElementById('speed').value);
+    const pointSize = parseInt(document.getElementById('pointSize').value);
+    const lineScale = parseFloat(document.getElementById('lineScale').value);
+    const colorHex = document.getElementById('color').value;
+    const bgHex = document.getElementById('bgColor').value;
 
-  const rgb = hexToRgb(colorHex);
+    const rgb = hexToRgb(colorHex);
 
-  if (destroyCanvas) destroyCanvas();
+    if (destroyCanvas) destroyCanvas();
 
-  destroyCanvas = CanvasNest({
-    count,
-    speed,
-    pointSize,
-    lineScale,
-    color: `${rgb.r},${rgb.g},${rgb.b}`,
-    bgColor: bgHex,
-    opacity: 0.5,
-    zIndex: -1
-  });
-}
-
+    destroyCanvas = CanvasNest({
+      count,
+      speed,
+      pointSize,
+      lineScale,
+      color: `${rgb.r},${rgb.g},${rgb.b}`,
+      bgColor: bgHex,
+      opacity: 0.5,
+      zIndex: -1
+    });
+  }
 
   function hexToRgb(hex) {
     const bigint = parseInt(hex.replace("#", ""), 16);
@@ -83,6 +98,30 @@
   }
 
   window.onload = updatePointCount;
+
+  function resetAttachCounter() {
+    const maxEl = document.getElementById("attached-max");
+    if (maxEl) maxEl.textContent = 0;
+    if (window._resetAttachedMax) window._resetAttachedMax();
+  }
+
+  function resetAllSettings() {
+    document.getElementById('pointCount').value = 200;
+    document.getElementById('speed').value = 1;
+    document.getElementById('pointSize').value = 1.5;
+    document.getElementById('lineScale').value = 1;
+    document.getElementById('color').value = '#009933';
+    document.getElementById('bgColor').value = '#ffffff';
+    document.getElementById('mode').value = 'gravity';
+
+    document.getElementById('attached-now').textContent = 0;
+    document.getElementById('attached-max').textContent = 0;
+
+    if (window._resetAttachedMax) window._resetAttachedMax();
+    if (window._resetModeToDefault) window._resetModeToDefault();
+
+    updatePointCount();
+  }
 </script>
 
 <script>
@@ -107,7 +146,6 @@
     }, { passive: false }); // passive: false is required to prevent scroll
   });
 </script>
-
 
 </body>
 </html>
