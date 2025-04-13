@@ -63,28 +63,13 @@ window.CanvasNest = function({
           const dist2 = dx * dx + dy * dy;
 
           if (dist2 < q.max) {
-            if (q === mouse) {
-              if (mode === "gravity" && dist2 > q.max / 2) {
-                const force = 0.03 * (1 - dist2 / q.max);
-                p.x -= force * dx;
-                p.y -= force * dy;
-              } else if (mode === "repulsion") {
-                const distance = Math.sqrt(dist2);
-                if (distance > 0.5) {
-                  const nx = dx / distance;
-                  const ny = dy / distance;
-                  const force = 3 * (1 - distance / Math.sqrt(q.max));
-                  p.x += force * nx;
-                  p.y += force * ny;
-                } else {
-                  p.x += (Math.random() - 0.5) * 2;
-                  p.y += (Math.random() - 0.5) * 2;
-                }
-              }
+            if (q === mouse && mode === "gravity" && dist2 > q.max / 2) {
+              p.x -= 0.03 * dx;
+              p.y -= 0.03 * dy;
+            }
 
-              if (mode !== "ignore") {
-                attachedNow++;
-              }
+            if (q === mouse && mode !== "ignore") {
+              attachedNow++;
             }
 
             if (!(q === mouse && (mode === "repulsion" || mode === "ignore"))) {
