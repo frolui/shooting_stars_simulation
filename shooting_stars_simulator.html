@@ -6,7 +6,43 @@
 		<meta name="description" content="Shooting Stars Simulator">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="files/bootstrap.min.css">
-	<body style="padding: 0px;" aria-hidden="false" cz-shortcut-listen="true">
-<script type="text/javascript" color="0,153,51" opacity="0.5" src="files/canvas-nest.min.js" count="250"></script>
+<body style="padding: 0px;">
+  <div id="control-panel" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 10px 15px;
+    border-radius: 8px;
+    z-index: 9999;
+    font-family: sans-serif;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+    <label for="pointCount">Points:</label>
+    <input type="number" id="pointCount" min="10" max="1000" value="250" style="width: 60px; margin: 0 10px;">
+    <button onclick="updatePointCount()">Apply</button>
+  </div>
+
+  <script type="text/javascript" color="0,153,51" opacity="0.5" src="files/canvas-nest.min.js" count="250"></script>
+
+  <script>
+    function updatePointCount() {
+      const newCount = document.getElementById('pointCount').value;
+
+      const oldCanvas = document.querySelector("canvas[id^='c_n']");
+      if (oldCanvas) oldCanvas.remove();
+
+      const oldScript = document.querySelector("script[src*='canvas-nest']");
+      if (oldScript) oldScript.remove();
+
+      const newScript = document.createElement("script");
+      newScript.src = "files/canvas-nest.min.js";
+      newScript.setAttribute("type", "text/javascript");
+      newScript.setAttribute("color", "0,153,51");
+      newScript.setAttribute("opacity", "0.5");
+      newScript.setAttribute("count", newCount);
+
+      document.body.appendChild(newScript);
+    }
+  </script>
 </body>
 </html>
