@@ -1,4 +1,13 @@
-window.CanvasNest = function({ count = 99, speed = 1, color = "0,0,0", opacity = 0.5, zIndex = -1 } = {}) {
+window.CanvasNest = function({
+  count = 99,
+  speed = 1,
+  pointSize = 1,
+  lineScale = 1,
+  color = "0,0,0",
+  opacity = 0.5,
+  zIndex = -1,
+  bgColor = "transparent"
+} = {}) {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const points = [];
@@ -20,7 +29,8 @@ window.CanvasNest = function({ count = 99, speed = 1, color = "0,0,0", opacity =
       p.xa *= (p.x > width || p.x < 0) ? -1 : 1;
       p.ya *= (p.y > height || p.y < 0) ? -1 : 1;
 
-      context.fillRect(p.x - 0.5, p.y - 0.5, 1, 1);
+      context.fillStyle = `rgba(${color},1)`;
+      context.fillRect(p.x - pointSize / 2, p.y - pointSize / 2, pointSize, pointSize);
 
       for (let i = 0; i < all.length; i++) {
         const q = all[i];
@@ -35,7 +45,7 @@ window.CanvasNest = function({ count = 99, speed = 1, color = "0,0,0", opacity =
             }
             const ratio = (q.max - dist2) / q.max;
             context.beginPath();
-            context.lineWidth = ratio / 2;
+            context.lineWidth = ratio / 2 * lineScale;
             context.strokeStyle = `rgba(${color},${ratio + 0.2})`;
             context.moveTo(p.x, p.y);
             context.lineTo(q.x, q.y);
@@ -49,7 +59,7 @@ window.CanvasNest = function({ count = 99, speed = 1, color = "0,0,0", opacity =
     requestAnimationFrame(draw);
   }
 
-  canvas.style.cssText = `position:fixed;top:0;left:0;z-index:${zIndex};opacity:${opacity}`;
+  canvas.style.cssText = `position:fixed;top:0;left:0;z-index:${zIndex};opacity:${opacity};background:${bgColor}`;
   document.body.appendChild(canvas);
   resizeCanvas();
   window.onresize = resizeCanvas;
@@ -75,5 +85,5 @@ window.CanvasNest = function({ count = 99, speed = 1, color = "0,0,0", opacity =
 
   draw();
 
-  return () => canvas.remove(); // destroy function
+  return () => canvas.remove();
 };

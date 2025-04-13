@@ -8,38 +8,106 @@
 </head>
 <body style="padding: 0px;">
 
-<div id="control-panel" style="position:fixed; top:20px; right:20px; background:rgba(255,255,255,0.6); padding:12px 16px; border-radius:8px; z-index:9999; font-family:sans-serif; box-shadow:0 0 10px rgba(0,0,0,0.2); display:flex; flex-direction:column; gap:10px; min-width:160px;">
-  <label for="pointCount">Points:</label>
-  <input type="number" id="pointCount" min="10" max="1000" value="250" style="width:100%;">
+<div id="control-panel" style="position:fixed; top:20px; right:20px; background:rgba(255,255,255,0.6); padding:12px 16px; border-radius:8px; z-index:9999; font-family:sans-serif; box-shadow:0 0 10px rgba(0,0,0,0.2); display:flex; flex-direction:column; gap:10px; min-width:200px;">
 
-  <label for="speed">Speed:</label>
-  <input type="number" id="speed" min="0.1" max="5" step="0.1" value="1" style="width:100%;">
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="pointCount" style="margin-right:10px;">Points:</label>
+    <input type="number" id="pointCount" min="10" max="1000" value="250" style="width:100px;">
+  </div>
 
-  <button onclick="updatePointCount()" style="margin-top:10px; padding:6px 10px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-weight:normal; cursor:pointer;">Apply</button>
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="speed" style="margin-right:10px;">Speed:</label>
+    <input type="number" id="speed" min="0.1" max="5" step="0.1" value="1" style="width:100px;">
+  </div>
+
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="pointSize" style="margin-right:10px;">Point size:</label>
+    <input type="number" id="pointSize" min="1" max="5" step="1" value="1" style="width:100px;">
+  </div>
+
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="lineScale" style="margin-right:10px;">Line scale:</label>
+    <input type="number" id="lineScale" min="0.1" max="3" step="0.1" value="1" style="width:100px;">
+  </div>
+
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="color" style="margin-right:10px;">Point/Line:</label>
+    <input type="color" id="color" value="#009933" style="width:100px;">
+  </div>
+
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <label for="bgColor" style="margin-right:10px;">Background:</label>
+    <input type="color" id="bgColor" value="#ffffff" style="width:100px;">
+  </div>
+
+  <button onclick="updatePointCount()" style="padding:6px 10px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-weight:normal; cursor:pointer;">Apply</button>
 </div>
 
 
+<script src="files/canvas-nest.custom.js"></script>
+<script>
+  let destroyCanvas = null;
 
-  <script src="files/canvas-nest.custom.js"></script>
-  <script>
-    let destroyCanvas = null;
+  function updatePointCount() {
+  const count = parseInt(document.getElementById('pointCount').value);
+  const speed = parseFloat(document.getElementById('speed').value);
+  const pointSize = parseInt(document.getElementById('pointSize').value);
+  const lineScale = parseFloat(document.getElementById('lineScale').value);
+  const colorHex = document.getElementById('color').value;
+  const bgHex = document.getElementById('bgColor').value;
 
-    function updatePointCount() {
-      const count = parseInt(document.getElementById('pointCount').value);
-      const speed = parseFloat(document.getElementById('speed').value);
+  const rgb = hexToRgb(colorHex);
 
-      if (destroyCanvas) destroyCanvas();
+  if (destroyCanvas) destroyCanvas();
 
-      destroyCanvas = CanvasNest({
-        count,
-        speed,
-        color: "0,153,51",
-        opacity: 0.5,
-        zIndex: -1
-      });
-    }
+  destroyCanvas = CanvasNest({
+    count,
+    speed,
+    pointSize,
+    lineScale,
+    color: `${rgb.r},${rgb.g},${rgb.b}`,
+    bgColor: bgHex,
+    opacity: 0.5,
+    zIndex: -1
+  });
+}
 
-    window.onload = updatePointCount;
-  </script>
+
+  function hexToRgb(hex) {
+    const bigint = parseInt(hex.replace("#", ""), 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255
+    };
+  }
+
+  window.onload = updatePointCount;
+</script>
+
+<script>
+  document.querySelectorAll('#control-panel input[type="number"]').forEach(input => {
+    input.addEventListener('wheel', function(e) {
+      // Prevent the page from scrolling
+      e.preventDefault();
+
+      const step = parseFloat(input.step) || 1;
+      const min = parseFloat(input.min);
+      const max = parseFloat(input.max);
+      const oldValue = parseFloat(input.value) || 0;
+
+      const direction = e.deltaY < 0 ? 1 : -1;
+      let newValue = oldValue + direction * step;
+
+      // clamp to min/max if specified
+      if (!isNaN(min)) newValue = Math.max(newValue, min);
+      if (!isNaN(max)) newValue = Math.min(newValue, max);
+
+      input.value = parseFloat(newValue.toFixed(5));
+    }, { passive: false }); // passive: false is required to prevent scroll
+  });
+</script>
+
+
 </body>
 </html>
