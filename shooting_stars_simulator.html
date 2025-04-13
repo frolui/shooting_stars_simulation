@@ -1,48 +1,45 @@
 <!DOCTYPE html>
-<html data-lt-installed="true"><head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>Shooting Stars Simulator</title>
-		<meta name="keywords" content="shooting stars simulator">
-		<meta name="description" content="Shooting Stars Simulator">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="stylesheet" href="files/bootstrap.min.css">
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Shooting Stars Simulator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="files/bootstrap.min.css">
+</head>
 <body style="padding: 0px;">
-  <div id="control-panel" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 10px 15px;
-    border-radius: 8px;
-    z-index: 9999;
-    font-family: sans-serif;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);">
-    <label for="pointCount">Points:</label>
-    <input type="number" id="pointCount" min="10" max="1000" value="250" style="width: 60px; margin: 0 10px;">
-    <button onclick="updatePointCount()">Apply</button>
-  </div>
 
-  <script type="text/javascript" color="0,153,51" opacity="0.5" src="files/canvas-nest.min.js" count="250"></script>
+<div id="control-panel" style="position:fixed; top:20px; right:20px; background:rgba(255,255,255,0.6); padding:12px 16px; border-radius:8px; z-index:9999; font-family:sans-serif; box-shadow:0 0 10px rgba(0,0,0,0.2); display:flex; flex-direction:column; gap:10px; min-width:160px;">
+  <label for="pointCount">Points:</label>
+  <input type="number" id="pointCount" min="10" max="1000" value="250" style="width:100%;">
 
+  <label for="speed">Speed:</label>
+  <input type="number" id="speed" min="0.1" max="5" step="0.1" value="1" style="width:100%;">
+
+  <button onclick="updatePointCount()" style="margin-top:10px; padding:6px 10px; border:none; border-radius:5px; background:rgba(0,0,0,0.1); color:#000; font-weight:normal; cursor:pointer;">Apply</button>
+</div>
+
+
+
+  <script src="files/canvas-nest.custom.js"></script>
   <script>
+    let destroyCanvas = null;
+
     function updatePointCount() {
-      const newCount = document.getElementById('pointCount').value;
+      const count = parseInt(document.getElementById('pointCount').value);
+      const speed = parseFloat(document.getElementById('speed').value);
 
-      const oldCanvas = document.querySelector("canvas[id^='c_n']");
-      if (oldCanvas) oldCanvas.remove();
+      if (destroyCanvas) destroyCanvas();
 
-      const oldScript = document.querySelector("script[src*='canvas-nest']");
-      if (oldScript) oldScript.remove();
-
-      const newScript = document.createElement("script");
-      newScript.src = "files/canvas-nest.min.js";
-      newScript.setAttribute("type", "text/javascript");
-      newScript.setAttribute("color", "0,153,51");
-      newScript.setAttribute("opacity", "0.5");
-      newScript.setAttribute("count", newCount);
-
-      document.body.appendChild(newScript);
+      destroyCanvas = CanvasNest({
+        count,
+        speed,
+        color: "0,153,51",
+        opacity: 0.5,
+        zIndex: -1
+      });
     }
+
+    window.onload = updatePointCount;
   </script>
 </body>
 </html>
